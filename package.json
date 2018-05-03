@@ -1,14 +1,22 @@
 {
   "name": "node-esi-stackdriver",
-  "version": "1.0.23",
-  "description": "esi module written in node with stackdriver logging",
+  "version": "1.0.24",
+  "description": "npm module for EVE Online's ESI api with built in Stackdriver logging",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tsc",
     "push": "npm run build && npm publish"
   },
-  "author": "Jeremy Shore (Chingy Chonga)",
+  "author": {
+    "email": "w9jds@live.com",
+    "name": "Jeremy Shore (Chingy Chonga)",
+    "url": "https://github.com/w9jds"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/w9jds/node-esi-stackdriver"
+  },
   "license": "MIT",
   "dependencies": {
     "@google-cloud/logging": "^1.2.0",

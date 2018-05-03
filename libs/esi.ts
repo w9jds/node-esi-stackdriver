@@ -3,11 +3,13 @@ import * as fs from 'fs';
 import fetch, { Response } from 'node-fetch';
 
 import Logger from './logging';
+import {Header, Mail} from '../models/Mails';
 import {Severity, StackdriverOptions} from '../models/Log';
 import {Character, Location, Ship, Online, Affiliation, Roles, Titles, Title} from '../models/Character';
 import {Region, Type, Group, Reference} from '../models/Universe';
-import {Group as MarketGroup} from '../models/Market';
+import {Group as MarketGroup, Order} from '../models/Market';
 import {Server, Status} from '../models/Server';
+import { SkillQueueItem, SkillsOverview } from '../models/Skills';
 
 const basePath = 'https://esi.tech.ccp.is';
 
@@ -15,6 +17,7 @@ export interface ErrorResponse {
     error: boolean;
     statusCode: number;
     uri: string;
+    content?: string;
 }
 
 export default class Esi {
@@ -42,8 +45,9 @@ export default class Esi {
         return {
             error: true,
             statusCode: response.status,
-            uri: response.url
-        }
+            uri: response.url,
+            content: await response.text()
+        };
     }
 
     private get = async (uri: string, auth?: string) => {
@@ -120,7 +124,7 @@ export default class Esi {
     
     /** Characters **/
 
-    public getCharacter = async (id: string): Promise<any | ErrorResponse> => 
+    public getCharacter = async (id: string | number): Promise<any | ErrorResponse> => 
         await this.get(`${basePath}/latest/characters/${id}/?datasource=${this.server}`);
     
     public getCharacterOnline = async (character: Character): Promise<Online | ErrorResponse> => {
@@ -159,7 +163,7 @@ export default class Esi {
         };
     }
     
-    public getCharacterRoles = async (id: string, accessToken: string): Promise<Roles | ErrorResponse> => {
+    public getCharacterRoles = async (id: string | number, accessToken: string): Promise<Roles | ErrorResponse> => {
         const content = await this.get(
             `${basePath}/v2/characters/${id}/roles/?datasource=${this.server}`,
             `Bearer ${accessToken}`
@@ -175,7 +179,7 @@ export default class Esi {
         return content;
     }
 
-    public getCharacterTitles = async (id: number, accessToken: string): Promise<Titles | ErrorResponse> => {
+    public getCharacterTitles = async (id: string | number, accessToken: string): Promise<Titles | ErrorResponse> => {
         const content = await this.get(
             `${basePath}/v1/characters/${id}/titles/?datasource=${this.server}`,
             `Bearer ${accessToken}`
@@ -183,7 +187,7 @@ export default class Esi {
 
         if (content instanceof Array) {
             return {
-                id,
+                id: typeof id === 'string' ? parseInt(id) : id,
                 titles: content
             };
         }
@@ -197,6 +201,22 @@ export default class Esi {
     /** Corporations */
 
     
+    /** Skills */
+
+    public getSkills = async (character: Character): Promise<SkillsOverview | ErrorResponse> => 
+        await this.get(`${basePath}/v4/characters/${character.id}/skills/`, `Bearer ${character.sso.accessToken}`)
+
+    public getSkillQueue = async (character: Character): Promise<SkillQueueItem[] | ErrorResponse> => 
+        await this.get(`${basePath}/v2/characters/${character.id}/skillqueue/`, `Bearer ${character.sso.accessToken}`)
+
+
+    /** Mail */
+
+    public getMailHeaders = async (character: Character): Promise<Header[] | ErrorResponse> =>
+        await this.get(`${basePath}/v1/characters/${character.id}/mail/`, `Bearer ${character.sso.accessToken}`)
+
+    public getMail = async (character: Character, mailId: number | string): Promise<Mail | ErrorResponse> =>
+        await this.get(`${basePath}/v1/characters/${character.id}/mail/${mailId}/`, `Bearer ${character.sso.accessToken}`)
 
     /** Market */
 
@@ -205,6 +225,9 @@ export default class Esi {
 
     public getGroupItems = async (groupId: string | number): Promise<MarketGroup | ErrorResponse> => 
         await this.get(`${basePath}/v1/markets/groups/${groupId}/?datasource=${this.server}`)
+
+    public getRegionOrders = async (regionId: string | number, typeId: string | number): Promise<Order[] | ErrorResponse> => 
+        await this.get(`${basePath}/v1/markets/${regionId}/orders/?type_id=${typeId}&datasource=${this.server}`)
     
     /** Universe */
 
