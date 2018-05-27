@@ -4,6 +4,7 @@ export interface Character {
     accountId: string;
     allianceId?: number;
     corpId?: number;
+    titles?: string[];
     hash: string;
     sso?: Permissions;
 }

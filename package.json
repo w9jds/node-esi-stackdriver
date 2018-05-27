@@ -1,6 +1,6 @@
 {
   "name": "node-esi-stackdriver",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "npm module for EVE Online's ESI api with built in Stackdriver logging",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
