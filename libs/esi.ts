@@ -1,17 +1,16 @@
 import * as bluebird from 'bluebird';
-import * as fs from 'fs';
 import fetch, { Response } from 'node-fetch';
 
 import Logger from './logging';
 import {Header, Mail} from '../models/Mails';
 import {Severity, StackdriverOptions} from '../models/Log';
-import {Character, Location, Ship, Online, Affiliation, Roles, Titles, Title} from '../models/Character';
+import {Character, Location, Ship, Online, Affiliation, Roles, Titles} from '../models/Character';
 import {Region, Type, Group, Reference} from '../models/Universe';
 import {Group as MarketGroup, Order} from '../models/Market';
 import {Server, Status} from '../models/Server';
 import { SkillQueueItem, SkillsOverview } from '../models/Skills';
 
-const basePath = 'https://esi.tech.ccp.is';
+const basePath = 'https://esi.evetech.net';
 
 export interface ErrorResponse {
     error: boolean;
@@ -33,20 +32,21 @@ export default class Esi {
     }
 
     public verifyResponse = async (method: string, response: Response): Promise<any | ErrorResponse> => {    
-        if (response.status >= 200 && response.status < 305) {
+        if ((response.status >= 200 && response.status < 300) || response.status == 305) {
             if (response.body) {
                 return await response.json();
             }
             return;
         }
 
-        await this.logger.logHttp(method, response, await response.text());
-        
+        const content = await response.text();
+        await this.logger.logHttp(method, response, content);
+
         return {
             error: true,
             statusCode: response.status,
             uri: response.url,
-            content: await response.text()
+            content
         };
     }
 
@@ -107,29 +107,30 @@ export default class Esi {
     private errorHandler = async (error, uri): Promise<ErrorResponse> => {
         await this.logger.log(Severity.ERROR, {}, error);
         return {
-            error: true, 
+            uri,
+            error: true,
             statusCode: 500,
-            uri
+            content: JSON.stringify(error)
         };
     }
 
-    public search = async (query: string): Promise<any | ErrorResponse> => 
-        await this.get(`${basePath}/latest/search/?categories=alliance%2Ccharacter%2Ccorporation&datasource=${this.server}&language=en-us&search=${query}&strict=false`);
+    public search = async (query: string): Promise<any | ErrorResponse> =>
+        await this.get(`${basePath}/v2/search/?categories=alliance%2Ccharacter%2Ccorporation&datasource=${this.server}&language=en-us&search=${query}&strict=false`);
     
     public getNames = async (ids: string[] | number[]): Promise<Reference[] | ErrorResponse> =>
         await this.post(`${basePath}/v2/universe/names/?datasource=${this.server}`, ids)
     
     public status = async (): Promise<Status | ErrorResponse> => 
-        await this.get(`${basePath}/latest/status/?datasource=${this.server}`);
+        await this.get(`${basePath}/v1/status/?datasource=${this.server}`);
     
     /** Characters **/
 
     public getCharacter = async (id: string | number): Promise<any | ErrorResponse> => 
-        await this.get(`${basePath}/latest/characters/${id}/?datasource=${this.server}`);
+        await this.get(`${basePath}/v4/characters/${id}/?datasource=${this.server}`);
     
     public getCharacterOnline = async (character: Character): Promise<Online | ErrorResponse> => {
         const content = await this.get(
-            `${basePath}/v2/characters/${character.id}/online/?datasource=${this.server}`, 
+            `${basePath}/v2/characters/${character.id}/online/?datasource=${this.server}`,
             `Bearer ${character.sso.accessToken}`
         );
 
@@ -141,7 +142,7 @@ export default class Esi {
     
     public getCharacterLocation = async (character: Character): Promise<Location | ErrorResponse> => {
         const content = await this.get(
-            `${basePath}/latest/characters/${character.id}/location/?datasource=${this.server}`,
+            `${basePath}/v1/characters/${character.id}/location/?datasource=${this.server}`,
             `Bearer ${character.sso.accessToken}`
         );
 
@@ -153,7 +154,7 @@ export default class Esi {
     
     public getCharacterShip = async (character: Character): Promise<Ship | ErrorResponse> => {
         const content = await this.get(
-            `${basePath}/latest/characters/${character.id}/ship/?datasource=${this.server}`,
+            `${basePath}/v1/characters/${character.id}/ship/?datasource=${this.server}`,
             `Bearer ${character.sso.accessToken}`
         );
 
@@ -238,7 +239,7 @@ export default class Esi {
         await this.get(`${basePath}/v2/universe/system_kills/?datasource=${this.server}`);
 
     public getRoute = async (origin: string | number, destination: string | number, flag: string): Promise<any | ErrorResponse> =>
-        await this.get(`${basePath}/latest/route/${origin}/${destination}/?flag=${flag}`);
+        await this.get(`${basePath}/v1/route/${origin}/${destination}/?flag=${flag}`);
 
     public getRegions = async (): Promise<number[] | ErrorResponse> =>
         await this.get(`${basePath}/v1/universe/regions/?datasource=${this.server}`);
@@ -261,7 +262,7 @@ export default class Esi {
     /** UI */
 
     public setWaypoint = async (character: Character, location, setType): Promise<Response> => {    
-        const response: Response = await fetch(`${basePath}/latest/ui/autopilot/waypoint/?add_to_beginning=${setType.isFirst}&clear_other_waypoints=${setType.clear}&destination_id=${location.id}`, {
+        const response: Response = await fetch(`${basePath}/v2/ui/autopilot/waypoint/?add_to_beginning=${setType.isFirst}&clear_other_waypoints=${setType.clear}&destination_id=${location.id}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${character.sso.accessToken}`,
