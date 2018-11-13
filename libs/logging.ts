@@ -1,5 +1,5 @@
-import * as Logging from '@google-cloud/logging';
-import { Severity, Metadata, StackdriverOptions } from '../models/Log';
+import {Logging} from '@google-cloud/logging';
+import {Severity, Metadata, StackdriverOptions} from '../models/Log';
 import {Response} from 'node-fetch'
 
 export default class Logger {
@@ -14,8 +14,8 @@ export default class Logger {
     };
 
     constructor(private name: string, options: StackdriverOptions) {
-        const logging = new Logging({ 
-            projectId: options.projectId 
+        const logging = new Logging({
+            projectId: options.projectId
         });
 
         // this.resource = {
@@ -49,10 +49,10 @@ export default class Logger {
                     requestMethod: method
                 }
             };
-        
+
             return this.logger.write(
                 this.logger.entry(metadata, {
-                    headers: response.headers,
+                    headers: response.headers ? JSON.stringify(response.headers) : '',
                     body
                 })
             );

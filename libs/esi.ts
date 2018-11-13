@@ -31,7 +31,7 @@ export default class Esi {
         this.logger =  new Logger('esi', options);
     }
 
-    public verifyResponse = async (method: string, response: Response): Promise<any | ErrorResponse> => {    
+    public verifyResponse = async (method: string, response: Response): Promise<any | ErrorResponse> => {
         if ((response.status >= 200 && response.status < 300) || response.status == 305) {
             if (response.body) {
                 return await response.json();
@@ -96,7 +96,7 @@ export default class Esi {
                     ...this.headers
                 }
             });
-            
+
             return await this.verifyResponse('POST', response);
         }
         catch(error) {
@@ -116,18 +116,18 @@ export default class Esi {
 
     public search = async (query: string): Promise<any | ErrorResponse> =>
         await this.get(`${basePath}/v2/search/?categories=alliance%2Ccharacter%2Ccorporation&datasource=${this.server}&language=en-us&search=${query}&strict=false`);
-    
+
     public getNames = async (ids: string[] | number[]): Promise<Reference[] | ErrorResponse> =>
         await this.post(`${basePath}/v2/universe/names/?datasource=${this.server}`, ids)
-    
-    public status = async (): Promise<Status | ErrorResponse> => 
+
+    public status = async (): Promise<Status | ErrorResponse> =>
         await this.get(`${basePath}/v1/status/?datasource=${this.server}`);
-    
+
     /** Characters **/
 
-    public getCharacter = async (id: string | number): Promise<any | ErrorResponse> => 
+    public getCharacter = async (id: string | number): Promise<any | ErrorResponse> =>
         await this.get(`${basePath}/v4/characters/${id}/?datasource=${this.server}`);
-    
+
     public getCharacterOnline = async (character: Character): Promise<Online | ErrorResponse> => {
         const content = await this.get(
             `${basePath}/v2/characters/${character.id}/online/?datasource=${this.server}`,
@@ -139,7 +139,7 @@ export default class Esi {
             ...content
         };
     }
-    
+
     public getCharacterLocation = async (character: Character): Promise<Location | ErrorResponse> => {
         const content = await this.get(
             `${basePath}/v1/characters/${character.id}/location/?datasource=${this.server}`,
@@ -151,7 +151,7 @@ export default class Esi {
             ...content
         };
     }
-    
+
     public getCharacterShip = async (character: Character): Promise<Ship | ErrorResponse> => {
         const content = await this.get(
             `${basePath}/v1/characters/${character.id}/ship/?datasource=${this.server}`,
@@ -163,7 +163,7 @@ export default class Esi {
             ...content
         };
     }
-    
+
     public getCharacterRoles = async (id: string | number, accessToken: string): Promise<Roles | ErrorResponse> => {
         const content = await this.get(
             `${basePath}/v2/characters/${id}/roles/?datasource=${this.server}`,
@@ -198,16 +198,16 @@ export default class Esi {
 
     public getAffiliations = async (characterIds: string[] | number[]): Promise<Affiliation[] | ErrorResponse> =>
         await this.post(`${basePath}/v1/characters/affiliation/?datasource=${this.server}`, characterIds)
-    
+
     /** Corporations */
 
-    
+
     /** Skills */
 
-    public getSkills = async (character: Character): Promise<SkillsOverview | ErrorResponse> => 
+    public getSkills = async (character: Character): Promise<SkillsOverview | ErrorResponse> =>
         await this.get(`${basePath}/v4/characters/${character.id}/skills/`, `Bearer ${character.sso.accessToken}`)
 
-    public getSkillQueue = async (character: Character): Promise<SkillQueueItem[] | ErrorResponse> => 
+    public getSkillQueue = async (character: Character): Promise<SkillQueueItem[] | ErrorResponse> =>
         await this.get(`${basePath}/v2/characters/${character.id}/skillqueue/`, `Bearer ${character.sso.accessToken}`)
 
 
@@ -221,47 +221,47 @@ export default class Esi {
 
     /** Market */
 
-    public getGroups = async (): Promise<number[] | ErrorResponse> => 
+    public getGroups = async (): Promise<number[] | ErrorResponse> =>
         await this.get(`${basePath}/v1/markets/groups/?datasource=${this.server}`)
 
-    public getGroupItems = async (groupId: string | number): Promise<MarketGroup | ErrorResponse> => 
+    public getGroupItems = async (groupId: string | number): Promise<MarketGroup | ErrorResponse> =>
         await this.get(`${basePath}/v1/markets/groups/${groupId}/?datasource=${this.server}`)
 
-    public getRegionOrders = async (regionId: string | number, typeId: string | number): Promise<Order[] | ErrorResponse> => 
+    public getRegionOrders = async (regionId: string | number, typeId: string | number): Promise<Order[] | ErrorResponse> =>
         await this.get(`${basePath}/v1/markets/${regionId}/orders/?type_id=${typeId}&datasource=${this.server}`)
-    
+
     /** Universe */
 
-    public getSystemKills = async (): Promise<any | ErrorResponse> => 
-        await this.get(`${basePath}/v1/universe/system_jumps/?datasource=${this.server}`);
-
-    public getSystemJumps = async (): Promise<any | ErrorResponse> => 
+    public getSystemKills = async (): Promise<any | ErrorResponse> =>
         await this.get(`${basePath}/v2/universe/system_kills/?datasource=${this.server}`);
+
+    public getSystemJumps = async (): Promise<any | ErrorResponse> =>
+        await this.get(`${basePath}/v1/universe/system_jumps/?datasource=${this.server}`);
 
     public getRoute = async (origin: string | number, destination: string | number, flag: string): Promise<any | ErrorResponse> =>
         await this.get(`${basePath}/v1/route/${origin}/${destination}/?flag=${flag}`);
 
     public getRegions = async (): Promise<number[] | ErrorResponse> =>
         await this.get(`${basePath}/v1/universe/regions/?datasource=${this.server}`);
-    
-    public getRegion = async (regionId: string | number): Promise<Region | ErrorResponse> => 
+
+    public getRegion = async (regionId: string | number): Promise<Region | ErrorResponse> =>
         await this.get(`${basePath}/v1/universe/regions/${regionId}/?datasource=${this.server}`);
 
     public getTypes = async (): Promise<number[] | ErrorResponse> =>
         await this.get(`${basePath}/v1/universe/types/?datasource=${this.server}`);
- 
-    public getType = async (typeId: string | number): Promise<Type | ErrorResponse> => 
+
+    public getType = async (typeId: string | number): Promise<Type | ErrorResponse> =>
         await this.get(`${basePath}/v3/universe/types/${typeId}/?datasource=${this.server}`);
 
-    public getUniverseGroups = async (): Promise<number[] | ErrorResponse> => 
+    public getUniverseGroups = async (): Promise<number[] | ErrorResponse> =>
         await this.get(`${basePath}/v1/universe/groups/?datasource=${this.server}`);
 
-    public getUniverseGroup = async (groupId: string | number): Promise<Group | ErrorResponse> => 
+    public getUniverseGroup = async (groupId: string | number): Promise<Group | ErrorResponse> =>
         await this.get(`${basePath}/v1/universe/groups/${groupId}/?datasource=${this.server}`);
 
     /** UI */
 
-    public setWaypoint = async (character: Character, location, setType): Promise<Response> => {    
+    public setWaypoint = async (character: Character, location, setType): Promise<Response> => {
         const response: Response = await fetch(`${basePath}/v2/ui/autopilot/waypoint/?add_to_beginning=${setType.isFirst}&clear_other_waypoints=${setType.clear}&destination_id=${location.id}`, {
             method: 'POST',
             headers: {
@@ -269,11 +269,11 @@ export default class Esi {
                 ...this.headers
             }
         });
-    
+
         return response;
     }
 
-    public getKillmail = async (id: string | number, hash: string): Promise<any | ErrorResponse> => 
+    public getKillmail = async (id: string | number, hash: string): Promise<any | ErrorResponse> =>
         await this.get(`${basePath}/v1/killmails/${id}/${hash}/?datasource=${this.server}`);
 
 }
