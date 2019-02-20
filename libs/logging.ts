@@ -52,7 +52,7 @@ export default class Logger {
 
             return this.logger.write(
                 this.logger.entry(metadata, {
-                    headers: response.headers ? JSON.stringify(response.headers) : '',
+                    headers: response.headers ? JSON.stringify(response.headers.raw()) : '',
                     body
                 })
             );
