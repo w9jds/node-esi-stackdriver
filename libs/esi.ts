@@ -1,10 +1,10 @@
-import * as bluebird from 'bluebird';
+import { map } from 'bluebird';
 import fetch, { Response } from 'node-fetch';
 
 import Logger from './logging';
 import {Header, Mail} from '../models/Mails';
 import {Severity, StackdriverOptions} from '../models/Log';
-import {Character, Location, Ship, Online, Affiliation, Roles, Titles} from '../models/Character';
+import {Character, Location, Ship, Online, Affiliation, Roles, Title, CorporationHistory} from '../models/Character';
 import {Region, Type, Group, Reference} from '../models/Universe';
 import {Group as MarketGroup, Order} from '../models/Market';
 import {Server, Status} from '../models/Server';
@@ -74,8 +74,7 @@ export default class Esi {
     private getAllPages = async (response: Response) => {
         const pageSize = parseInt(response.headers.get('X-Pages'));
 
-        const types = await bluebird
-            .map([...Array(pageSize).keys()], page => {
+        const types = await map([...Array(pageSize).keys()], page => {
                 return fetch(`${response.url}&page=${page + 1}`);
             })
             .map((response: Response) => {
@@ -105,7 +104,7 @@ export default class Esi {
     }
 
     private errorHandler = async (error, uri): Promise<ErrorResponse> => {
-        await this.logger.log(Severity.ERROR, {}, error);
+        await this.logger.log(Severity.ERROR, {}, error).catch(ex => { console.error(ex) });
         return {
             uri,
             error: true,
@@ -164,37 +163,14 @@ export default class Esi {
         };
     }
 
-    public getCharacterRoles = async (id: string | number, accessToken: string): Promise<Roles | ErrorResponse> => {
-        const content = await this.get(
-            `${basePath}/v2/characters/${id}/roles/?datasource=${this.server}`,
-            `Bearer ${accessToken}`
-        );
+    public getCharacterRoles = async (id: string | number, accessToken: string): Promise<Roles | ErrorResponse> => 
+        await this.get(`${basePath}/v2/characters/${id}/roles/?datasource=${this.server}`, `Bearer ${accessToken}`);
 
-        if (!content.error) {
-            return {
-                id,
-                ...content
-            };
-        }
+    public getCharacterTitles = async (id: string | number, accessToken: string): Promise<Title[] | ErrorResponse> => 
+        await this.get(`${basePath}/v1/characters/${id}/titles/?datasource=${this.server}`, `Bearer ${accessToken}`)
 
-        return content;
-    }
-
-    public getCharacterTitles = async (id: string | number, accessToken: string): Promise<Titles | ErrorResponse> => {
-        const content = await this.get(
-            `${basePath}/v1/characters/${id}/titles/?datasource=${this.server}`,
-            `Bearer ${accessToken}`
-        );
-
-        if (content instanceof Array) {
-            return {
-                id: typeof id === 'string' ? parseInt(id) : id,
-                titles: content
-            };
-        }
-
-        return content;
-    }
+    public getCharacterHistory = async (id: string | number, accessToken: string): Promise<CorporationHistory[] | ErrorResponse> =>
+        await this.get(`${basePath}/v1/characters/${id}/corporationhistory/?datasource=${this.server}`, `Bearer ${accessToken}`);
 
     public getAffiliations = async (characterIds: string[] | number[]): Promise<Affiliation[] | ErrorResponse> =>
         await this.post(`${basePath}/v1/characters/affiliation/?datasource=${this.server}`, characterIds)

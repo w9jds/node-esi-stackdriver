@@ -6,7 +6,14 @@ export interface Character {
     corpId?: number;
     titles?: string[];
     hash: string;
+    roles?: CharacterRoles;
     sso?: Permissions;
+}
+
+export interface CharacterRoles {
+    roles?: string[];
+    roles_at_hq?: string[];
+    roles_at_other?: string[];
 }
 
 export interface Permissions {
@@ -17,16 +24,10 @@ export interface Permissions {
 }
 
 export interface Roles {
-    id?: number;
     roles: any[];
     roles_at_base: any[];
     roles_at_hq: any[];
     roles_at_other: any[];
-}
-
-export interface Titles {
-    id?: number;
-    titles: Title[];
 }
 
 export interface Title {
@@ -61,4 +62,11 @@ export interface Affiliation {
     corporation_id: number;
     alliance_id?: number;
     faction_id?: number;
+}
+
+export interface CorporationHistory {
+    corporation_id: number;
+    is_deleted?: boolean;
+    record_id: boolean;
+    start_date: string;
 }
