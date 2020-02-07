@@ -8,6 +8,7 @@ export interface Character {
     hash: string;
     roles?: CharacterRoles;
     sso?: Permissions;
+    memberFor?: number;
 }
 
 export interface CharacterRoles {

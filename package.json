@@ -1,6 +1,6 @@
 {
   "name": "node-esi-stackdriver",
-  "version": "1.0.29",
+  "version": "1.0.31",
   "description": "npm module for EVE Online's ESI api with built in Stackdriver logging",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,16 +19,16 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/logging": "^5.2.2",
-    "bluebird": "^3.5.5",
+    "@google-cloud/logging": "^5.5.5",
+    "bluebird": "^3.7.2",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.27",
-    "@types/node": "^12.7.2",
-    "@types/node-fetch": "^2.5.0",
+    "@types/bluebird": "^3.5.29",
+    "@types/node": "^12.12.14",
+    "@types/node-fetch": "^2.5.4",
     "express": "4.17.1",
     "tslib": "^1.10.0",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.2"
   }
 }
