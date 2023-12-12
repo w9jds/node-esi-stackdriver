@@ -9,6 +9,8 @@ import { Region, Type, Group, Reference } from '../models/Universe';
 import { Group as MarketGroup, Order } from '../models/Market';
 import { Server, Status } from '../models/Server';
 import { SkillQueueItem, SkillsOverview } from '../models/Skills';
+import { War, WarfareStats, WarfareSystem } from '../models/FactionWarfare';
+import { AuthOptions } from '../models/Options';
 
 const basePath = 'https://esi.evetech.net';
 
@@ -113,9 +115,6 @@ export default class Esi {
     };
   }
 
-  public search = async (query: string): Promise<any | ErrorResponse> =>
-    await this.get(`${basePath}/v2/search/?categories=alliance%2Ccharacter%2Ccorporation&datasource=${this.server}&language=en-us&search=${query}&strict=false`);
-
   public getNames = async (ids: string[] | number[]): Promise<Reference[] | ErrorResponse> =>
     await this.post(`${basePath}/v3/universe/names/?datasource=${this.server}`, ids)
 
@@ -127,38 +126,38 @@ export default class Esi {
   public getCharacter = async (id: string | number): Promise<CharacterInfo | ErrorResponse> =>
     await this.get(`${basePath}/v5/characters/${id}/?datasource=${this.server}`);
 
-  public getCharacterOnline = async (character: Character): Promise<Online | ErrorResponse> => {
+  public getCharacterOnline = async (options: Pick<AuthOptions, 'character'>): Promise<Online | ErrorResponse> => {
     const content = await this.get(
-      `${basePath}/v3/characters/${character.id}/online/?datasource=${this.server}`,
-      `Bearer ${character.sso.accessToken}`
+      `${basePath}/v3/characters/${options.character.id}/online/?datasource=${this.server}`,
+      `Bearer ${options.character.sso.accessToken}`
     );
 
     return {
-      id: character.id,
+      id: options.character.id,
       ...content
     };
   }
 
-  public getCharacterLocation = async (character: Character): Promise<Location | ErrorResponse> => {
+  public getCharacterLocation = async (options: Pick<AuthOptions, 'character'>): Promise<Location | ErrorResponse> => {
     const content = await this.get(
-      `${basePath}/v2/characters/${character.id}/location/?datasource=${this.server}`,
-      `Bearer ${character.sso.accessToken}`
+      `${basePath}/v2/characters/${options.character.id}/location/?datasource=${this.server}`,
+      `Bearer ${options.character.sso.accessToken}`
     );
 
     return {
-      id: character.id,
+      id: options.character.id,
       ...content
     };
   }
 
-  public getCharacterShip = async (character: Character): Promise<Ship | ErrorResponse> => {
+  public getCharacterShip = async (options: Pick<AuthOptions, 'character'>): Promise<Ship | ErrorResponse> => {
     const content = await this.get(
-      `${basePath}/v2/characters/${character.id}/ship/?datasource=${this.server}`,
-      `Bearer ${character.sso.accessToken}`
+      `${basePath}/v2/characters/${options.character.id}/ship/?datasource=${this.server}`,
+      `Bearer ${options.character.sso.accessToken}`
     );
 
     return {
-      id: character.id,
+      id: options.character.id,
       ...content
     };
   }
@@ -206,6 +205,17 @@ export default class Esi {
   public getRegionOrders = async (regionId: string | number, typeId: string | number): Promise<Order[] | ErrorResponse> =>
     await this.get(`${basePath}/v1/markets/${regionId}/orders/?type_id=${typeId}&datasource=${this.server}`)
 
+  /** Faction Warfare */
+
+  public getFwSystems = async (): Promise<WarfareSystem[] | ErrorResponse> =>
+    await this.get(`${basePath}/v3/fw/systems?datasource=${this.server}`)
+
+  public getFwStats = async (): Promise<WarfareStats[] | ErrorResponse> =>
+    await this.get(`${basePath}/v2/fw/stats?datasource=${this.server}`)
+
+  public getFactionWars = async (): Promise<War[] | ErrorResponse> =>
+    await this.get(`${basePath}/v2/fw/wars/?datasource=${this.server}`)
+
   /** Universe */
 
   public getSystemKills = async (): Promise<any | ErrorResponse> =>
@@ -214,6 +224,9 @@ export default class Esi {
   public getSystemJumps = async (): Promise<any | ErrorResponse> =>
     await this.get(`${basePath}/v1/universe/system_jumps/?datasource=${this.server}`);
 
+  /**
+   * @deprecated this endpoint doesn't get updated with new stargates/systems fast enough to be relevent
+   */
   public getRoute = async (origin: string | number, destination: string | number, flag: string): Promise<any | ErrorResponse> =>
     await this.get(`${basePath}/v1/route/${origin}/${destination}/?flag=${flag}`);
 
@@ -235,14 +248,26 @@ export default class Esi {
   public getUniverseGroup = async (groupId: string | number): Promise<Group | ErrorResponse> =>
     await this.get(`${basePath}/v1/universe/groups/${groupId}/?datasource=${this.server}`);
 
-  /** UI */
 
+  /** UI */
   public setWaypoint = async (character: Character, location, setType): Promise<Response> => {
     const response: Response = await fetch(`${basePath}/v2/ui/autopilot/waypoint/?add_to_beginning=${setType.isFirst}&clear_other_waypoints=${setType.clear}&destination_id=${location.id}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${character.sso.accessToken}`,
         ...this.headers
+      }
+    });
+
+    return response;
+  }
+
+  public openInformation = async (character: Character, targetId: number): Promise<Response> => {
+    const response: Response = await fetch(`${basePath}/v1/ui/openwindow/information?target_id=${targetId}&datasource=${this.server}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${character.sso.accessToken}`,
+        ...this.headers,
       }
     });
 
