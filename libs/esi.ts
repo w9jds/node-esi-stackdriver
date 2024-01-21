@@ -205,6 +205,10 @@ export default class Esi {
   public getRegionOrders = async (regionId: string | number, typeId: string | number): Promise<Order[] | ErrorResponse> =>
     await this.get(`${basePath}/v1/markets/${regionId}/orders/?type_id=${typeId}&datasource=${this.server}`)
 
+  /** Sovereignty */
+  public getSovMap = async (): Promise<SovereigntySystem[] | ErrorResponse> =>
+    await this.get(`${basePath}/v1/sovereignty/map?datasource=${this.server}`)
+
   /** Faction Warfare */
 
   public getFwSystems = async (): Promise<WarfareSystem[] | ErrorResponse> =>

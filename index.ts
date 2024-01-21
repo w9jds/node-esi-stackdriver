@@ -8,6 +8,7 @@ export { Status, Server } from './models/Server';
 export { Order, Group as MarketGroup } from './models/Market';
 export { EffectId, AttributeId, Effect, EffectModifier } from './models/Dogma';
 export { Category, Gender, Type, Region, Group, Reference } from './models/Universe';
+export { SystemState, WarfareSystem, WarfareStats, War } from './models/FactionWarfare';
 export { Header, Mail, Recipient, RecipientType } from './models/Mails';
 
 export {
