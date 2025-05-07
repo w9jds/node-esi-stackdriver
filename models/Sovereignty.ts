@@ -1,4 +1,4 @@
-type SovereigntySystem = {
+export type SovereigntySystem = {
   alliance_id?: number;
   corporation_id?: number;
   faction_id?: number;

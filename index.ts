@@ -6,10 +6,11 @@ export { Esi, ErrorResponse }
 export { LoggingOptions } from '@google-cloud/logging';
 export { Status, Server } from './models/Server';
 export { Order, Group as MarketGroup } from './models/Market';
-export { EffectId, AttributeId, Effect, EffectModifier } from './models/Dogma';
+export { EffectId, AttributeId, DogmaEffect, EffectModifier } from './models/Dogma';
 export { Category, Gender, Type, Region, Group, Reference } from './models/Universe';
 export { SystemState, WarfareSystem, WarfareStats, War } from './models/FactionWarfare';
 export { Header, Mail, Recipient, RecipientType } from './models/Mails';
+export { SovereigntySystem } from './models/Sovereignty';
 
 export {
   Skill,
@@ -29,4 +30,6 @@ export {
   CharacterInfo,
   CharacterRoles,
   CorporationHistory,
+  Corporation,
+  Alliance,
 } from './models/Character';

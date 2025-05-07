@@ -4,13 +4,15 @@ import { LoggingOptions } from '@google-cloud/logging';
 
 import Logger from './logging';
 import { Header, Mail } from '../models/Mails';
-import { Character, Location, Ship, Online, Affiliation, Roles, Title, CorporationHistory, CharacterInfo } from '../models/Character';
+import { Character, Location, Ship, Online, Affiliation, Roles, Title, CorporationHistory, CharacterInfo, Corporation, Alliance } from '../models/Character';
 import { Region, Type, Group, Reference } from '../models/Universe';
 import { Group as MarketGroup, Order } from '../models/Market';
 import { Server, Status } from '../models/Server';
 import { SkillQueueItem, SkillsOverview } from '../models/Skills';
 import { War, WarfareStats, WarfareSystem } from '../models/FactionWarfare';
 import { AuthOptions } from '../models/Options';
+import { SovereigntySystem } from '../models/Sovereignty';
+import { DogmaAttribute, DogmaEffect } from '../models/Dogma';
 
 const basePath = 'https://esi.evetech.net';
 
@@ -122,7 +124,6 @@ export default class Esi {
     await this.get(`${basePath}/v2/status/?datasource=${this.server}`);
 
   /** Characters **/
-
   public getCharacter = async (id: string | number): Promise<CharacterInfo | ErrorResponse> =>
     await this.get(`${basePath}/v5/characters/${id}/?datasource=${this.server}`);
 
@@ -175,19 +176,21 @@ export default class Esi {
     await this.post(`${basePath}/v2/characters/affiliation/?datasource=${this.server}`, characterIds)
 
   /** Corporations */
+  public getCorporation = async (corpId: string | number): Promise<Corporation | ErrorResponse> =>
+    await this.get(`${basePath}/v5/corporations/${corpId}/?datasource=${this.server}`)
 
+  /** Alliances */
+  public getAlliance = async (allianceId: string | number): Promise<Alliance | ErrorResponse> =>
+    await this.get(`${basePath}/v4/alliances/${allianceId}/?datasource=${this.server}`)
 
   /** Skills */
-
   public getSkills = async (character: Character): Promise<SkillsOverview | ErrorResponse> =>
     await this.get(`${basePath}/v4/characters/${character.id}/skills/`, `Bearer ${character.sso.accessToken}`)
 
   public getSkillQueue = async (character: Character): Promise<SkillQueueItem[] | ErrorResponse> =>
     await this.get(`${basePath}/v2/characters/${character.id}/skillqueue/`, `Bearer ${character.sso.accessToken}`)
 
-
   /** Mail */
-
   public getMailHeaders = async (character: Character): Promise<Header[] | ErrorResponse> =>
     await this.get(`${basePath}/v1/characters/${character.id}/mail/`, `Bearer ${character.sso.accessToken}`)
 
@@ -195,11 +198,10 @@ export default class Esi {
     await this.get(`${basePath}/v1/characters/${character.id}/mail/${mailId}/`, `Bearer ${character.sso.accessToken}`)
 
   /** Market */
-
   public getGroups = async (): Promise<number[] | ErrorResponse> =>
     await this.get(`${basePath}/v1/markets/groups/?datasource=${this.server}`)
 
-  public getGroupItems = async (groupId: string | number): Promise<MarketGroup | ErrorResponse> =>
+  public getGroup = async (groupId: string | number): Promise<MarketGroup | ErrorResponse> =>
     await this.get(`${basePath}/v1/markets/groups/${groupId}/?datasource=${this.server}`)
 
   public getRegionOrders = async (regionId: string | number, typeId: string | number): Promise<Order[] | ErrorResponse> =>
@@ -221,18 +223,11 @@ export default class Esi {
     await this.get(`${basePath}/v2/fw/wars/?datasource=${this.server}`)
 
   /** Universe */
-
   public getSystemKills = async (): Promise<any | ErrorResponse> =>
     await this.get(`${basePath}/v2/universe/system_kills/?datasource=${this.server}`);
 
   public getSystemJumps = async (): Promise<any | ErrorResponse> =>
     await this.get(`${basePath}/v1/universe/system_jumps/?datasource=${this.server}`);
-
-  /**
-   * @deprecated this endpoint doesn't get updated with new stargates/systems fast enough to be relevent
-   */
-  public getRoute = async (origin: string | number, destination: string | number, flag: string): Promise<any | ErrorResponse> =>
-    await this.get(`${basePath}/v1/route/${origin}/${destination}/?flag=${flag}`);
 
   public getRegions = async (): Promise<number[] | ErrorResponse> =>
     await this.get(`${basePath}/v1/universe/regions/?datasource=${this.server}`);
@@ -280,6 +275,13 @@ export default class Esi {
 
   public getKillmail = async (id: string | number, hash: string): Promise<any | ErrorResponse> =>
     await this.get(`${basePath}/v1/killmails/${id}/${hash}/?datasource=${this.server}`);
+
+  /** Dogma */
+  public getDogmaAttribute = async (id: string | number): Promise<DogmaAttribute | ErrorResponse> =>
+    await this.get(`${basePath}/v1/dogma/attributes/${id}/?datasource=${this.server}`)
+
+  public getDogmaEffect = async (id: string | number): Promise<DogmaEffect | ErrorResponse> =>
+    await this.get(`${basePath}/v2/dogma/effects/${id}/?datasource=${this.server}`)
 
 }
 
