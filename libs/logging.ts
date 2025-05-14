@@ -1,6 +1,5 @@
 import { Log, Logging, LoggingOptions } from '@google-cloud/logging';
 import { LogEntry, LogSeverity } from '@google-cloud/logging/build/src/entry';
-import { Response } from 'node-fetch';
 
 type Resource = {
   type?: string;
@@ -49,7 +48,7 @@ export default class Logger {
 
       return this.logger.write(
         this.logger.entry(metadata, {
-          headers: response.headers ? JSON.stringify(response.headers.raw()) : '',
+          headers: response.headers ? JSON.stringify(response.headers) : '',
           body
         })
       );

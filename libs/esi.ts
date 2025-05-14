@@ -1,11 +1,10 @@
 import { map } from 'bluebird';
-import fetch, { Response } from 'node-fetch';
 import { LoggingOptions } from '@google-cloud/logging';
 
 import Logger from './logging';
 import { Header, Mail } from '../models/Mails';
 import { Character, Location, Ship, Online, Affiliation, Roles, Title, CorporationHistory, CharacterInfo, Corporation, Alliance } from '../models/Character';
-import { Region, Type, Group, Reference } from '../models/Universe';
+import { Region, Type, Group, Reference, SearchParameters, SearchResults, Faction } from '../models/Universe';
 import { Group as MarketGroup, Order } from '../models/Market';
 import { Server, Status } from '../models/Server';
 import { SkillQueueItem, SkillsOverview } from '../models/Skills';
@@ -56,12 +55,17 @@ export default class Esi {
 
   private get = async (uri: string, auth?: string) => {
     try {
-      const response: Response = await fetch(uri, {
+      const headers: HeadersInit = {
+        ...this.headers
+      }
+
+      if (auth) {
+        headers.Authorization = auth;
+      }
+
+      const response = await fetch(uri, {
         method: 'GET',
-        headers: {
-          'Authorization': auth,
-          ...this.headers
-        }
+        headers,
       });
 
       if (response.headers.has('X-Pages')) {
@@ -89,15 +93,20 @@ export default class Esi {
   }
 
   private post = async (uri: string, body: Object, auth?: string) => {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...this.headers
+    };
+
+    if (auth) {
+      headers.Authorization = auth;
+    }
+
     try {
       const response: Response = await fetch(uri, {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: {
-          'Authorization': auth,
-          'Content-Type': 'application/json',
-          ...this.headers
-        }
+        headers,
       });
 
       return await this.verifyResponse('POST', response);
@@ -222,6 +231,13 @@ export default class Esi {
   public getFactionWars = async (): Promise<War[] | ErrorResponse> =>
     await this.get(`${basePath}/v2/fw/wars/?datasource=${this.server}`)
 
+  /** Search */
+  public search = async (character: Character, options: SearchParameters): Promise<SearchResults | ErrorResponse> =>
+    await this.get(
+      `${basePath}/v3/characters/${character.id}/search/?categories=${options.categories.join(',')}&language=${options.language || 'en-us'}&search=${options.search}&strict=${options.strict || false}&dataSource=${this.server}`,
+      `Bearer ${character.sso.accessToken}`
+    );
+
   /** Universe */
   public getSystemKills = async (): Promise<any | ErrorResponse> =>
     await this.get(`${basePath}/v2/universe/system_kills/?datasource=${this.server}`);
@@ -247,6 +263,8 @@ export default class Esi {
   public getUniverseGroup = async (groupId: string | number): Promise<Group | ErrorResponse> =>
     await this.get(`${basePath}/v1/universe/groups/${groupId}/?datasource=${this.server}`);
 
+  public getFactions = async (): Promise<Faction[] | ErrorResponse> =>
+    await this.get(`${basePath}/v2/universe/factions/?datasource=${this.server}`);
 
   /** UI */
   public setWaypoint = async (character: Character, location, setType): Promise<Response> => {

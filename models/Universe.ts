@@ -56,6 +56,19 @@ export interface Reference {
   category: Category
 }
 
+export interface Faction {
+  corporation_id: number;
+  description: string;
+  faction_id: number;
+  is_unique: boolean;
+  militia_corporation_id: number;
+  name: string;
+  size_factor: number;
+  solar_system_id: number;
+  station_count: number;
+  station_system_count: number;
+}
+
 export interface Character {
   name: string;
   description: string;
@@ -68,4 +81,27 @@ export interface Character {
   ancestry_id?: number;
   security_status?: number;
   faction_id?: number;
+}
+
+type Categories = 'agent' | 'alliance' | 'character' | 'constellation' | 'corporation' | 'faction' | 'inventory_type' | 'region' | 'solar_system' | 'station' | 'structure';
+
+export type SearchParameters = {
+  categories: Categories[];
+  language?: string;
+  search: string;
+  strict?: boolean;
+}
+
+export type SearchResults = {
+  agent: number[];
+  alliance: number[];
+  character: number[];
+  constellation: number[];
+  corporation: number[];
+  faction: number[];
+  inventory_type: number[];
+  region: number[];
+  solar_system: number[];
+  station: number[];
+  structure: number[];
 }
